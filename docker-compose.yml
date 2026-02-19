@@ -19,6 +19,8 @@ services:
     environment:
       - NODE_ENV=production
       - KI_HOST=backend
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_MODEL=${OPENAI_MODEL:-gpt-3.5-turbo}
     restart: always
 
   database:
