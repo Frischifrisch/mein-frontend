@@ -6,19 +6,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-3.5-turbo';
+// Docker Model Runner (OpenAI-kompatibel) oder OpenAI als Fallback
+const LLM_BASE_URL = process.env.LLM_BASE_URL || 'http://model-runner.docker.internal/engines/llama.cpp/v1';
+const LLM_MODEL    = process.env.LLM_MODEL    || 'ai/gpt-oss:120B-UD-Q4_K_XL';
+const LLM_API_KEY  = process.env.LLM_API_KEY  || 'no-key';
+
+console.log(`Using LLM: ${LLM_BASE_URL} | Model: ${LLM_MODEL}`);
 
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body;
-  if (!OPENAI_API_KEY) {
-    return res.status(500).json({ error: 'OPENAI_API_KEY ist nicht gesetzt.' });
-  }
   try {
     const response = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      { model: OPENAI_MODEL, messages },
-      { headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' } }
+      `${LLM_BASE_URL}/chat/completions`,
+      { model: LLM_MODEL, messages },
+      { headers: { Authorization: `Bearer ${LLM_API_KEY}`, 'Content-Type': 'application/json' } }
     );
     res.json({ reply: response.data.choices[0].message.content });
   } catch (err) {
